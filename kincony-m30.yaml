@@ -1,0 +1,1788 @@
+substitutions:
+  device_name: kincony-m30
+  device_friendly_name: KinCony M30
+  device_model: M30
+  device_make: KinCony
+  package_version: "1.0.0"
+  wifi_ssid: !secret wifi_ssid
+  wifi_password: !secret wifi_password
+  ota_password: !secret ota_password
+  ap_password: !secret ap_password
+  led_indicator_brightness_percent: "10"
+  idle_current_threshold_amps: "0.0"
+  low_current_max_amps: "4.0"
+  mid_current_max_amps: "8.0"
+  high_current_max_amps: "12.0"
+  alert_current_threshold: "16.0"
+
+esphome:
+  name: "${device_name}"
+  friendly_name: "${device_friendly_name}"
+  comment: "${device_model} by ${device_make} version ${package_version}"
+  on_boot:
+    priority: -100
+    then:
+      - if:
+          condition:
+            lambda: 'return id(seed_led_profiles_on_boot);'
+          then:
+            - script.execute: seed_led_profiles
+      - script.execute: refresh_ct_led_indicators
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+  baud_rate: 0
+
+api:
+
+ota:
+  - platform: esphome
+    password: ${ota_password}
+    on_begin:
+      then:
+        - lambda: 'id(seed_led_profiles_on_boot) = true;'
+
+wifi:
+  ssid: ${wifi_ssid}
+  password: ${wifi_password}
+  ap:
+    ssid: "KinCony M30 Fallback"
+    password: ${ap_password}
+
+captive_portal:
+
+globals:
+  - id: seed_led_profiles_on_boot
+    type: bool
+    restore_value: true
+    initial_value: "true"
+
+switch:
+  - platform: template
+    name: "CT LED Indication"
+    id: ct_led_indication_enabled
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    entity_category: config
+    turn_on_action:
+      - script.execute: refresh_ct_led_indicators
+    turn_off_action:
+      - light.turn_off: ct_led_strip
+
+button:
+  - platform: restart
+    name: "Reboot device"
+    id: button_restart
+    icon: mdi:power-cycle
+    entity_category: diagnostic
+
+script:
+  - id: seed_led_profiles
+    mode: restart
+    then:
+      - lambda: |-
+          const float brightness = ${led_indicator_brightness_percent} / 100.0f;
+
+          auto seed_profile = [&](esphome::light::LightState *profile, float red, float green, float blue) {
+            auto call = profile->turn_on();
+            call.set_brightness(brightness);
+            call.set_rgb(red, green, blue);
+            call.perform();
+          };
+
+          seed_profile(id(low_current_led_profile), 0.0f, 1.0f, 0.0f);
+          seed_profile(id(mid_current_led_profile), 1.0f, 1.0f, 0.0f);
+          seed_profile(id(high_current_led_profile), 1.0f, 0.65f, 0.0f);
+          seed_profile(id(alert_current_led_profile), 1.0f, 0.0f, 0.0f);
+          id(seed_led_profiles_on_boot) = false;
+
+  - id: refresh_ct_led_indicators
+    mode: restart
+    then:
+      - lambda: |-
+          const bool blink_on = ((millis() / 500) % 2) == 0;
+
+          if (!id(ct_led_indication_enabled).state) {
+            return;
+          }
+
+          auto apply_profile = [&](esphome::light::LightState *indicator, float current) {
+            if (isnan(current) || current <= ${idle_current_threshold_amps}) {
+              auto off_call = indicator->turn_off();
+              off_call.perform();
+              return;
+            }
+
+            esphome::light::LightState *profile = id(alert_current_led_profile);
+            bool blink = false;
+            if (current <= ${low_current_max_amps}) {
+              profile = id(low_current_led_profile);
+            } else if (current <= ${mid_current_max_amps}) {
+              profile = id(mid_current_led_profile);
+            } else if (current <= ${high_current_max_amps}) {
+              profile = id(high_current_led_profile);
+            } else if (current > ${alert_current_threshold}) {
+              blink = true;
+            }
+
+            if (!profile->remote_values.is_on() || profile->remote_values.get_brightness() <= 0.0f) {
+              auto off_call = indicator->turn_off();
+              off_call.perform();
+              return;
+            }
+
+            if (blink && !blink_on) {
+              auto off_call = indicator->turn_off();
+              off_call.perform();
+              return;
+            }
+
+            auto call = indicator->turn_on();
+            call.set_brightness(profile->remote_values.get_brightness());
+            call.set_rgb(
+              profile->remote_values.get_red(),
+              profile->remote_values.get_green(),
+              profile->remote_values.get_blue()
+            );
+            call.set_color_mode(ColorMode::RGB);
+            call.perform();
+          };
+
+          apply_profile(id(ct_01_led), id(ct_01_current).state);
+          apply_profile(id(ct_02_led), id(ct_02_current).state);
+          apply_profile(id(ct_03_led), id(ct_03_current).state);
+          apply_profile(id(ct_04_led), id(ct_04_current).state);
+          apply_profile(id(ct_05_led), id(ct_05_current).state);
+          apply_profile(id(ct_06_led), id(ct_06_current).state);
+          apply_profile(id(ct_07_led), id(ct_07_current).state);
+          apply_profile(id(ct_08_led), id(ct_08_current).state);
+          apply_profile(id(ct_09_led), id(ct_09_current).state);
+          apply_profile(id(ct_10_led), id(ct_10_current).state);
+          apply_profile(id(ct_11_led), id(ct_11_current).state);
+          apply_profile(id(ct_12_led), id(ct_12_current).state);
+          apply_profile(id(ct_13_led), id(ct_13_current).state);
+          apply_profile(id(ct_14_led), id(ct_14_current).state);
+          apply_profile(id(ct_15_led), id(ct_15_current).state);
+          apply_profile(id(ct_16_led), id(ct_16_current).state);
+          apply_profile(id(ct_17_led), id(ct_17_current).state);
+          apply_profile(id(ct_18_led), id(ct_18_current).state);
+          apply_profile(id(ct_19_led), id(ct_19_current).state);
+          apply_profile(id(ct_20_led), id(ct_20_current).state);
+          apply_profile(id(ct_21_led), id(ct_21_current).state);
+          apply_profile(id(ct_22_led), id(ct_22_current).state);
+          apply_profile(id(ct_23_led), id(ct_23_current).state);
+          apply_profile(id(ct_24_led), id(ct_24_current).state);
+          apply_profile(id(ct_25_led), id(ct_25_current).state);
+          apply_profile(id(ct_26_led), id(ct_26_current).state);
+          apply_profile(id(ct_27_led), id(ct_27_current).state);
+          apply_profile(id(ct_28_led), id(ct_28_current).state);
+          apply_profile(id(ct_29_led), id(ct_29_current).state);
+          apply_profile(id(ct_30_led), id(ct_30_current).state);
+
+interval:
+  - interval: 500ms
+    then:
+      - script.execute: refresh_ct_led_indicators
+
+uart:
+  id: modbus_uart
+  rx_pin: 32
+  tx_pin: 33
+  baud_rate: 115200
+  stop_bits: 1
+  data_bits: 8
+  parity: NONE
+
+
+modbus:
+  id: modbus_hub
+  uart_id: modbus_uart
+
+
+modbus_controller:
+  - id: modbus_hub_m30
+    address: 1
+    modbus_id: modbus_hub
+    update_interval: 5s
+
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 100
+    register_type: holding
+    name: "CT 01 Current"
+    id: ct_01_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 101
+    register_type: holding
+    name: "CT 02 Current"
+    id: ct_02_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 102
+    register_type: holding
+    name: "CT 03 Current"
+    id: ct_03_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 103
+    register_type: holding
+    name: "CT 04 Current"
+    id: ct_04_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 104
+    register_type: holding
+    name: "CT 05 Current"
+    id: ct_05_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 105
+    register_type: holding
+    name: "CT 06 Current"
+    id: ct_06_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 106
+    register_type: holding
+    name: "CT 07 Current"
+    id: ct_07_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 107
+    register_type: holding
+    name: "CT 08 Current"
+    id: ct_08_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 108
+    register_type: holding
+    name: "CT 09 Current"
+    id: ct_09_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 109
+    register_type: holding
+    name: "CT 10 Current"
+    id: ct_10_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 110
+    register_type: holding
+    name: "L1 Voltage"
+    id: l1_voltage
+    unit_of_measurement: V
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 111
+    register_type: holding
+    name: "CT 01 Power"
+    id: ct_01_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 112
+    register_type: holding
+    name: "CT 02 Power"
+    id: ct_02_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 113
+    register_type: holding
+    name: "CT 03 Power"
+    id: ct_03_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 114
+    register_type: holding
+    name: "CT 04 Power"
+    id: ct_04_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 115
+    register_type: holding
+    name: "CT 05 Power"
+    id: ct_05_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 116
+    register_type: holding
+    name: "CT 06 Power"
+    id: ct_06_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 117
+    register_type: holding
+    name: "CT 07 Power"
+    id: ct_07_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 118
+    register_type: holding
+    name: "CT 08 Power"
+    id: ct_08_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 119
+    register_type: holding
+    name: "CT 09 Power"
+    id: ct_09_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 120
+    register_type: holding
+    name: "CT 10 Power"
+    id: ct_10_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 121
+    register_type: holding
+    name: "CT 01 Energy"
+    id: ct_01_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 122
+    register_type: holding
+    name: "CT 02 Energy"
+    id: ct_02_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 123
+    register_type: holding
+    name: "CT 03 Energy"
+    id: ct_03_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 124
+    register_type: holding
+    name: "CT 04 Energy"
+    id: ct_04_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 125
+    register_type: holding
+    name: "CT 05 Energy"
+    id: ct_05_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 126
+    register_type: holding
+    name: "CT 06 Energy"
+    id: ct_06_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 127
+    register_type: holding
+    name: "CT 07 Energy"
+    id: ct_07_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 128
+    register_type: holding
+    name: "CT 08 Energy"
+    id: ct_08_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 129
+    register_type: holding
+    name: "CT 09 Energy"
+    id: ct_09_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 130
+    register_type: holding
+    name: "CT 10 Energy"
+    id: ct_10_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 131
+    register_type: holding
+    name: "L1 Total Energy"
+    id: l1_total_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 132
+    register_type: holding
+    name: "L1 Frequency"
+    id: l1_frequency
+    unit_of_measurement: Hz
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 133
+    register_type: holding
+    name: "L1 Temperature 1"
+    id: l1_temperature_1
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 134
+    register_type: holding
+    name: "L1 Temperature 2"
+    id: l1_temperature_2
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 200
+    register_type: holding
+    name: "CT 11 Current"
+    id: ct_11_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 201
+    register_type: holding
+    name: "CT 12 Current"
+    id: ct_12_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 202
+    register_type: holding
+    name: "CT 13 Current"
+    id: ct_13_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 203
+    register_type: holding
+    name: "CT 14 Current"
+    id: ct_14_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 204
+    register_type: holding
+    name: "CT 15 Current"
+    id: ct_15_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 205
+    register_type: holding
+    name: "CT 16 Current"
+    id: ct_16_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 206
+    register_type: holding
+    name: "CT 17 Current"
+    id: ct_17_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 207
+    register_type: holding
+    name: "CT 18 Current"
+    id: ct_18_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 208
+    register_type: holding
+    name: "CT 19 Current"
+    id: ct_19_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 209
+    register_type: holding
+    name: "CT 20 Current"
+    id: ct_20_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 210
+    register_type: holding
+    name: "L2 Voltage"
+    id: l2_voltage
+    unit_of_measurement: V
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 211
+    register_type: holding
+    name: "CT 11 Power"
+    id: ct_11_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 212
+    register_type: holding
+    name: "CT 12 Power"
+    id: ct_12_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 213
+    register_type: holding
+    name: "CT 13 Power"
+    id: ct_13_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 214
+    register_type: holding
+    name: "CT 14 Power"
+    id: ct_14_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 215
+    register_type: holding
+    name: "CT 15 Power"
+    id: ct_15_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 216
+    register_type: holding
+    name: "CT 16 Power"
+    id: ct_16_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 217
+    register_type: holding
+    name: "CT 17 Power"
+    id: ct_17_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 218
+    register_type: holding
+    name: "CT 18 Power"
+    id: ct_18_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 219
+    register_type: holding
+    name: "CT 19 Power"
+    id: ct_19_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 220
+    register_type: holding
+    name: "CT 20 Power"
+    id: ct_20_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 221
+    register_type: holding
+    name: "CT 11 Energy"
+    id: ct_11_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 222
+    register_type: holding
+    name: "CT 12 Energy"
+    id: ct_12_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 223
+    register_type: holding
+    name: "CT 13 Energy"
+    id: ct_13_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 224
+    register_type: holding
+    name: "CT 14 Energy"
+    id: ct_14_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 225
+    register_type: holding
+    name: "CT 15 Energy"
+    id: ct_15_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 226
+    register_type: holding
+    name: "CT 16 Energy"
+    id: ct_16_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 227
+    register_type: holding
+    name: "CT 17 Energy"
+    id: ct_17_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 228
+    register_type: holding
+    name: "CT 18 Energy"
+    id: ct_18_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 229
+    register_type: holding
+    name: "CT 19 Energy"
+    id: ct_19_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 230
+    register_type: holding
+    name: "CT 20 Energy"
+    id: ct_20_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 231
+    register_type: holding
+    name: "L2 Total Energy"
+    id: l2_total_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 232
+    register_type: holding
+    name: "L2 Frequency"
+    id: l2_frequency
+    unit_of_measurement: Hz
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 233
+    register_type: holding
+    name: "L2 Temperature 1"
+    id: l2_temperature_1
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 234
+    register_type: holding
+    name: "L2 Temperature 2"
+    id: l2_temperature_2
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 300
+    register_type: holding
+    name: "CT 21 Current"
+    id: ct_21_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 301
+    register_type: holding
+    name: "CT 22 Current"
+    id: ct_22_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 302
+    register_type: holding
+    name: "CT 23 Current"
+    id: ct_23_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 303
+    register_type: holding
+    name: "CT 24 Current"
+    id: ct_24_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 304
+    register_type: holding
+    name: "CT 25 Current"
+    id: ct_25_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 305
+    register_type: holding
+    name: "CT 26 Current"
+    id: ct_26_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 306
+    register_type: holding
+    name: "CT 27 Current"
+    id: ct_27_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 307
+    register_type: holding
+    name: "CT 28 Current"
+    id: ct_28_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 308
+    register_type: holding
+    name: "CT 29 Current"
+    id: ct_29_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 309
+    register_type: holding
+    name: "CT 30 Current"
+    id: ct_30_current
+    unit_of_measurement: A
+    accuracy_decimals: 3
+    value_type: U_WORD
+    filters:
+      - multiply: 0.00098
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 310
+    register_type: holding
+    name: "L3 Voltage"
+    id: l3_voltage
+    unit_of_measurement: V
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 311
+    register_type: holding
+    name: "CT 21 Power"
+    id: ct_21_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 312
+    register_type: holding
+    name: "CT 22 Power"
+    id: ct_22_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 313
+    register_type: holding
+    name: "CT 23 Power"
+    id: ct_23_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 314
+    register_type: holding
+    name: "CT 24 Power"
+    id: ct_24_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 315
+    register_type: holding
+    name: "CT 25 Power"
+    id: ct_25_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 316
+    register_type: holding
+    name: "CT 26 Power"
+    id: ct_26_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 317
+    register_type: holding
+    name: "CT 27 Power"
+    id: ct_27_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 318
+    register_type: holding
+    name: "CT 28 Power"
+    id: ct_28_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 319
+    register_type: holding
+    name: "CT 29 Power"
+    id: ct_29_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 320
+    register_type: holding
+    name: "CT 30 Power"
+    id: ct_30_power
+    unit_of_measurement: W
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 321
+    register_type: holding
+    name: "CT 21 Energy"
+    id: ct_21_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 322
+    register_type: holding
+    name: "CT 22 Energy"
+    id: ct_22_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 323
+    register_type: holding
+    name: "CT 23 Energy"
+    id: ct_23_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 324
+    register_type: holding
+    name: "CT 24 Energy"
+    id: ct_24_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 325
+    register_type: holding
+    name: "CT 25 Energy"
+    id: ct_25_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 326
+    register_type: holding
+    name: "CT 26 Energy"
+    id: ct_26_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 327
+    register_type: holding
+    name: "CT 27 Energy"
+    id: ct_27_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 328
+    register_type: holding
+    name: "CT 28 Energy"
+    id: ct_28_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 329
+    register_type: holding
+    name: "CT 29 Energy"
+    id: ct_29_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    state_class: total_increasing
+    device_class: energy
+    modbus_controller_id: modbus_hub_m30
+    address: 330
+    register_type: holding
+    name: "CT 30 Energy"
+    id: ct_30_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 331
+    register_type: holding
+    name: "L3 Total Energy"
+    id: l3_total_energy
+    unit_of_measurement: kWh
+    accuracy_decimals: 1
+    value_type: U_WORD
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 332
+    register_type: holding
+    name: "L3 Frequency"
+    id: l3_frequency
+    unit_of_measurement: Hz
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 333
+    register_type: holding
+    name: "L3 Temperature 1"
+    id: l3_temperature_1
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: modbus_hub_m30
+    address: 334
+    register_type: holding
+    name: "L3 Temperature 2"
+    id: l3_temperature_2
+    unit_of_measurement: °C
+    accuracy_decimals: 1
+    value_type: U_WORD
+    filters:
+      - multiply: 0.1
+
+
+light:
+  - platform: partition
+    name: "Low Current LED Profile"
+    id: low_current_led_profile
+    icon: mdi:palette
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    restore_mode: RESTORE_DEFAULT_ON
+    initial_state:
+      state: true
+      brightness: ${led_indicator_brightness_percent}%
+      red: 0%
+      green: 100%
+      blue: 0%
+    on_state:
+      then:
+        - script.execute: refresh_ct_led_indicators
+    segments:
+      - id: ct_led_strip
+        from: 0
+        to: 0
+
+  - platform: partition
+    name: "Mid Current LED Profile"
+    id: mid_current_led_profile
+    icon: mdi:palette
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    restore_mode: RESTORE_DEFAULT_ON
+    initial_state:
+      state: true
+      brightness: ${led_indicator_brightness_percent}%
+      red: 100%
+      green: 100%
+      blue: 0%
+    on_state:
+      then:
+        - script.execute: refresh_ct_led_indicators
+    segments:
+      - id: ct_led_strip
+        from: 1
+        to: 1
+
+  - platform: partition
+    name: "High Current LED Profile"
+    id: high_current_led_profile
+    icon: mdi:palette
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    restore_mode: RESTORE_DEFAULT_ON
+    initial_state:
+      state: true
+      brightness: ${led_indicator_brightness_percent}%
+      red: 100%
+      green: 65%
+      blue: 0%
+    on_state:
+      then:
+        - script.execute: refresh_ct_led_indicators
+    segments:
+      - id: ct_led_strip
+        from: 2
+        to: 2
+
+  - platform: partition
+    name: "Alert Current LED Profile"
+    id: alert_current_led_profile
+    icon: mdi:palette
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    restore_mode: RESTORE_DEFAULT_ON
+    initial_state:
+      state: true
+      brightness: ${led_indicator_brightness_percent}%
+      red: 100%
+      green: 0%
+      blue: 0%
+    on_state:
+      then:
+        - script.execute: refresh_ct_led_indicators
+    segments:
+      - id: ct_led_strip
+        from: 3
+        to: 3
+
+  - platform: partition
+    name: "CT 01 LED"
+    id: ct_01_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 14
+        to: 14
+
+
+  - platform: partition
+    name: "CT 02 LED"
+    id: ct_02_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 13
+        to: 13
+
+  - platform: partition
+    name: "CT 03 LED"
+    id: ct_03_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 12
+        to: 12
+
+  - platform: partition
+    name: "CT 04 LED"
+    id: ct_04_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 11
+        to: 11
+
+  - platform: partition
+    name: "CT 05 LED"
+    id: ct_05_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 10
+        to: 10
+
+  - platform: partition
+    name: "CT 06 LED"
+    id: ct_06_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 9
+        to: 9
+
+  - platform: partition
+    name: "CT 07 LED"
+    id: ct_07_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 8
+        to: 8
+
+  - platform: partition
+    name: "CT 08 LED"
+    id: ct_08_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 7
+        to: 7
+
+  - platform: partition
+    name: "CT 09 LED"
+    id: ct_09_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 6
+        to: 6
+
+  - platform: partition
+    name: "CT 10 LED"
+    id: ct_10_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 5
+        to: 5
+
+  - platform: partition
+    name: "CT 11 LED"
+    id: ct_11_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 4
+        to: 4
+
+  - platform: partition
+    name: "CT 12 LED"
+    id: ct_12_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 3
+        to: 3
+
+  - platform: partition
+    name: "CT 13 LED"
+    id: ct_13_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 2
+        to: 2
+
+  - platform: partition
+    name: "CT 14 LED"
+    id: ct_14_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 1
+        to: 1
+
+  - platform: partition
+    name: "CT 15 LED"
+    id: ct_15_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 0
+        to: 0
+
+  - platform: partition
+    name: "CT 16 LED"
+    id: ct_16_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 15
+        to: 15
+
+  - platform: partition
+    name: "CT 17 LED"
+    id: ct_17_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 16
+        to: 16
+
+  - platform: partition
+    name: "CT 18 LED"
+    id: ct_18_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 17
+        to: 17
+
+  - platform: partition
+    name: "CT 19 LED"
+    id: ct_19_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 18
+        to: 18
+
+  - platform: partition
+    name: "CT 20 LED"
+    id: ct_20_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 19
+        to: 19
+
+  - platform: partition
+    name: "CT 21 LED"
+    id: ct_21_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 20
+        to: 20
+
+  - platform: partition
+    name: "CT 22 LED"
+    id: ct_22_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 21
+        to: 21
+
+  - platform: partition
+    name: "CT 23 LED"
+    id: ct_23_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 22
+        to: 22
+
+  - platform: partition
+    name: "CT 24 LED"
+    id: ct_24_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 23
+        to: 23
+
+  - platform: partition
+    name: "CT 25 LED"
+    id: ct_25_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 24
+        to: 24
+
+  - platform: partition
+    name: "CT 26 LED"
+    id: ct_26_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 25
+        to: 25
+
+  - platform: partition
+    name: "CT 27 LED"
+    id: ct_27_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 26
+        to: 26
+
+  - platform: partition
+    name: "CT 28 LED"
+    id: ct_28_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 27
+        to: 27
+
+  - platform: partition
+    name: "CT 29 LED"
+    id: ct_29_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 28
+        to: 28
+
+  - platform: partition
+    name: "CT 30 LED"
+    id: ct_30_led
+    internal: true
+    gamma_correct: 1.0
+    default_transition_length: 0s
+    segments:
+      - id: ct_led_strip
+        from: 29
+        to: 29
+  - platform: esp32_rmt_led_strip
+    id: ct_led_strip
+    internal: true
+    default_transition_length: 0s
+    rgb_order: GRB
+    pin: GPIO12
+    num_leds: 30
+    chipset: ws2812
+
+    gamma_correct: 1.0

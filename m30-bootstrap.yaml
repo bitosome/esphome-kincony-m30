@@ -1,0 +1,46 @@
+esphome:
+  name: kincony-m30
+  friendly_name: KinCony M30
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+logger:
+
+api:
+
+ota:
+  - platform: esphome
+
+ethernet:
+  type: LAN8720
+  mdc_pin: GPIO23
+  mdio_pin: GPIO18
+  clk:
+    mode: CLK_OUT
+    pin: 17
+  phy_addr: 0
+
+web_server:
+  port: 80
+
+binary_sensor:
+  - platform: status
+    name: M30 Status
+
+button:
+  - platform: restart
+    name: M30 Restart
+  - platform: safe_mode
+    name: M30 Safe Mode Boot
+
+sensor:
+  - platform: uptime
+    name: M30 Uptime
+    update_interval: 60s
+
+text_sensor:
+  - platform: version
+    name: M30 ESPHome Version
