@@ -210,6 +210,367 @@ modbus_controller:
     update_interval: 5s
 
 sensor:
+  # High-resolution energy: integrate 0.1 W power on-device
+  - platform: integration
+    name: "CT 01 Energy"
+    id: ct_01_energy
+    sensor: ct_01_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 02 Energy"
+    id: ct_02_energy
+    sensor: ct_02_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 03 Energy"
+    id: ct_03_energy
+    sensor: ct_03_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 04 Energy"
+    id: ct_04_energy
+    sensor: ct_04_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 05 Energy"
+    id: ct_05_energy
+    sensor: ct_05_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 06 Energy"
+    id: ct_06_energy
+    sensor: ct_06_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 07 Energy"
+    id: ct_07_energy
+    sensor: ct_07_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 08 Energy"
+    id: ct_08_energy
+    sensor: ct_08_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 09 Energy"
+    id: ct_09_energy
+    sensor: ct_09_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 10 Energy"
+    id: ct_10_energy
+    sensor: ct_10_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 11 Energy"
+    id: ct_11_energy
+    sensor: ct_11_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 12 Energy"
+    id: ct_12_energy
+    sensor: ct_12_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 13 Energy"
+    id: ct_13_energy
+    sensor: ct_13_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 14 Energy"
+    id: ct_14_energy
+    sensor: ct_14_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 15 Energy"
+    id: ct_15_energy
+    sensor: ct_15_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 16 Energy"
+    id: ct_16_energy
+    sensor: ct_16_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 17 Energy"
+    id: ct_17_energy
+    sensor: ct_17_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 18 Energy"
+    id: ct_18_energy
+    sensor: ct_18_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 19 Energy"
+    id: ct_19_energy
+    sensor: ct_19_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 20 Energy"
+    id: ct_20_energy
+    sensor: ct_20_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 21 Energy"
+    id: ct_21_energy
+    sensor: ct_21_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 22 Energy"
+    id: ct_22_energy
+    sensor: ct_22_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 23 Energy"
+    id: ct_23_energy
+    sensor: ct_23_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 24 Energy"
+    id: ct_24_energy
+    sensor: ct_24_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 25 Energy"
+    id: ct_25_energy
+    sensor: ct_25_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 26 Energy"
+    id: ct_26_energy
+    sensor: ct_26_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 27 Energy"
+    id: ct_27_energy
+    sensor: ct_27_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 28 Energy"
+    id: ct_28_energy
+    sensor: ct_28_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 29 Energy"
+    id: ct_29_energy
+    sensor: ct_29_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
+  - platform: integration
+    name: "CT 30 Energy"
+    id: ct_30_energy
+    sensor: ct_30_power
+    time_unit: h
+    unit_of_measurement: kWh
+    device_class: energy
+    state_class: total_increasing
+    accuracy_decimals: 3
+    restore: true
+    filters:
+      - multiply: 0.001
   - platform: modbus_controller
     modbus_controller_id: modbus_hub_m30
     address: 100
@@ -447,8 +808,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 121
     register_type: holding
-    name: "CT 01 Energy"
-    id: ct_01_energy
+    name: "CT 01 Energy (raw)"
+    id: ct_01_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -458,8 +820,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 122
     register_type: holding
-    name: "CT 02 Energy"
-    id: ct_02_energy
+    name: "CT 02 Energy (raw)"
+    id: ct_02_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -469,8 +832,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 123
     register_type: holding
-    name: "CT 03 Energy"
-    id: ct_03_energy
+    name: "CT 03 Energy (raw)"
+    id: ct_03_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -480,8 +844,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 124
     register_type: holding
-    name: "CT 04 Energy"
-    id: ct_04_energy
+    name: "CT 04 Energy (raw)"
+    id: ct_04_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -491,8 +856,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 125
     register_type: holding
-    name: "CT 05 Energy"
-    id: ct_05_energy
+    name: "CT 05 Energy (raw)"
+    id: ct_05_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -502,8 +868,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 126
     register_type: holding
-    name: "CT 06 Energy"
-    id: ct_06_energy
+    name: "CT 06 Energy (raw)"
+    id: ct_06_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -513,8 +880,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 127
     register_type: holding
-    name: "CT 07 Energy"
-    id: ct_07_energy
+    name: "CT 07 Energy (raw)"
+    id: ct_07_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -524,8 +892,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 128
     register_type: holding
-    name: "CT 08 Energy"
-    id: ct_08_energy
+    name: "CT 08 Energy (raw)"
+    id: ct_08_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -535,8 +904,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 129
     register_type: holding
-    name: "CT 09 Energy"
-    id: ct_09_energy
+    name: "CT 09 Energy (raw)"
+    id: ct_09_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -546,8 +916,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 130
     register_type: holding
-    name: "CT 10 Energy"
-    id: ct_10_energy
+    name: "CT 10 Energy (raw)"
+    id: ct_10_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -830,8 +1201,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 221
     register_type: holding
-    name: "CT 11 Energy"
-    id: ct_11_energy
+    name: "CT 11 Energy (raw)"
+    id: ct_11_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -841,8 +1213,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 222
     register_type: holding
-    name: "CT 12 Energy"
-    id: ct_12_energy
+    name: "CT 12 Energy (raw)"
+    id: ct_12_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -852,8 +1225,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 223
     register_type: holding
-    name: "CT 13 Energy"
-    id: ct_13_energy
+    name: "CT 13 Energy (raw)"
+    id: ct_13_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -863,8 +1237,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 224
     register_type: holding
-    name: "CT 14 Energy"
-    id: ct_14_energy
+    name: "CT 14 Energy (raw)"
+    id: ct_14_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -874,8 +1249,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 225
     register_type: holding
-    name: "CT 15 Energy"
-    id: ct_15_energy
+    name: "CT 15 Energy (raw)"
+    id: ct_15_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -885,8 +1261,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 226
     register_type: holding
-    name: "CT 16 Energy"
-    id: ct_16_energy
+    name: "CT 16 Energy (raw)"
+    id: ct_16_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -896,8 +1273,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 227
     register_type: holding
-    name: "CT 17 Energy"
-    id: ct_17_energy
+    name: "CT 17 Energy (raw)"
+    id: ct_17_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -907,8 +1285,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 228
     register_type: holding
-    name: "CT 18 Energy"
-    id: ct_18_energy
+    name: "CT 18 Energy (raw)"
+    id: ct_18_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -918,8 +1297,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 229
     register_type: holding
-    name: "CT 19 Energy"
-    id: ct_19_energy
+    name: "CT 19 Energy (raw)"
+    id: ct_19_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -929,8 +1309,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 230
     register_type: holding
-    name: "CT 20 Energy"
-    id: ct_20_energy
+    name: "CT 20 Energy (raw)"
+    id: ct_20_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -1213,8 +1594,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 321
     register_type: holding
-    name: "CT 21 Energy"
-    id: ct_21_energy
+    name: "CT 21 Energy (raw)"
+    id: ct_21_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -1224,8 +1606,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 322
     register_type: holding
-    name: "CT 22 Energy"
-    id: ct_22_energy
+    name: "CT 22 Energy (raw)"
+    id: ct_22_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -1235,8 +1618,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 323
     register_type: holding
-    name: "CT 23 Energy"
-    id: ct_23_energy
+    name: "CT 23 Energy (raw)"
+    id: ct_23_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -1246,8 +1630,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 324
     register_type: holding
-    name: "CT 24 Energy"
-    id: ct_24_energy
+    name: "CT 24 Energy (raw)"
+    id: ct_24_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -1257,8 +1642,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 325
     register_type: holding
-    name: "CT 25 Energy"
-    id: ct_25_energy
+    name: "CT 25 Energy (raw)"
+    id: ct_25_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -1268,8 +1654,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 326
     register_type: holding
-    name: "CT 26 Energy"
-    id: ct_26_energy
+    name: "CT 26 Energy (raw)"
+    id: ct_26_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -1279,8 +1666,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 327
     register_type: holding
-    name: "CT 27 Energy"
-    id: ct_27_energy
+    name: "CT 27 Energy (raw)"
+    id: ct_27_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -1290,8 +1678,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 328
     register_type: holding
-    name: "CT 28 Energy"
-    id: ct_28_energy
+    name: "CT 28 Energy (raw)"
+    id: ct_28_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -1301,8 +1690,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 329
     register_type: holding
-    name: "CT 29 Energy"
-    id: ct_29_energy
+    name: "CT 29 Energy (raw)"
+    id: ct_29_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
@@ -1312,8 +1702,9 @@ sensor:
     modbus_controller_id: modbus_hub_m30
     address: 330
     register_type: holding
-    name: "CT 30 Energy"
-    id: ct_30_energy
+    name: "CT 30 Energy (raw)"
+    id: ct_30_energy_raw
+    internal: true
     unit_of_measurement: kWh
     accuracy_decimals: 1
     value_type: U_WORD
